@@ -4,6 +4,7 @@ from driver.models import Driver
 
 class Ride(models.Model):
     STATUS_CHOICES = [
+        ('booked','Booked'),
         ('requested', 'Requested'),
         ('started', 'Started'),
         ('completed', 'Completed'),
@@ -13,7 +14,7 @@ class Ride(models.Model):
     rider = models.ForeignKey(User, related_name='rides_as_rider', on_delete=models.CASCADE)
     pickup_location = models.CharField(max_length=255)
     dropoff_location = models.CharField(max_length=255)
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='requested')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='booked')
     latitude = models.FloatField(default=0.0) 
     longitude = models.FloatField(default=0.0) 
     created_at = models.DateTimeField(auto_now_add=True)
