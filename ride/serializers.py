@@ -13,7 +13,7 @@ class RideSerializer(serializers.ModelSerializer):
             rider=validated_data['rider'],
             pickup_location=validated_data['pickup_location'],
             dropoff_location=validated_data['dropoff_location'],
-            status='requested',  
+            status='booked',  
             latitude=validated_data.get('latitude', 0.0),
             longitude=validated_data.get('longitude', 0.0),
         )
@@ -31,6 +31,15 @@ class DriverSerializer(serializers.ModelSerializer):
     class Meta:
         model = Driver
         fields = ['id', 'user', 'latitude', 'longitude', 'is_available']
+
+    def create(self, validated_data):
+        user = validated_data.get('user')
+        
+        if not user.is_staff:
+            raise serializers.ValidationError("Only staff users can create a driver.")
+        
+        return Driver.objects.create(**validated_data)
+
 
 class RideRequestSerializer(serializers.ModelSerializer):
     class Meta:
