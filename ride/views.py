@@ -105,4 +105,37 @@ class RideRequestCreateView(generics.CreateAPIView):
         ride.status = 'requested'
         ride.save() 
 
-        serializer.save(driver=nearby_driver, accepted=False, ride=ride)  
+        serializer.save(driver=nearby_driver, accepted=False, ride=ride)
+
+
+
+
+class RideRequestAcceptView(generics.UpdateAPIView):
+    queryset = RideRequest.objects.all()
+    serializer_class = RideRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        """
+        Allows a driver to accept a ride request.
+        """
+        ride_request = self.get_object()
+
+        # Ensure the requesting user is a driver and matches the assigned driver
+        if not hasattr(request.user, 'driver') or request.user.driver.id != ride_request.driver.id:
+            raise ValidationError("You are not authorized to accept this ride request.")
+
+        # Check if the ride request is already accepted
+        if ride_request.accepted:
+            raise ValidationError("This ride request has already been accepted.")
+
+        # Update the ride request status
+        ride_request.accepted = True
+        ride_request.ride.status = 'started'
+        ride_request.ride.save()
+        ride_request.save()
+
+        return Response({
+            "message": "Ride request accepted successfully.",
+            "ride_request": RideRequestSerializer(ride_request).data
+        }, status=status.HTTP_200_OK)
