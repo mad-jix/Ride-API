@@ -1,23 +1,23 @@
 from django.contrib.auth import authenticate
 
-
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from .serializers import  DriverRegistrationSerializer,RiderRegistrationSerializer,UserLoginSerializer
 
-from .serializers import SignupSerializer,LoginSerializer,DriverSignupSerializer
 
-# Create your views here.
-class UserSignupView(APIView):
-    serializer_class = SignupSerializer
+class RiderRegistrationView(APIView):
+    serializer_class = RiderRegistrationSerializer
     permission_classes = [permissions.AllowAny]
+
     @swagger_auto_schema(
-        request_body=SignupSerializer,
+        request_body=RiderRegistrationSerializer,
         responses={
             200: openapi.Response('User created  successful', examples={
                 'application/json': {
@@ -28,18 +28,21 @@ class UserSignupView(APIView):
             401: openapi.Response('Unauthorized')
         }
     )
+    
     def post(self, request):
-        serializer = SignupSerializer(data=request.data)
+        serializer = RiderRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Rider registered successfully!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class DriverSignupView(APIView):
-    serializer_class = DriverSignupSerializer
+
+class DriverRegistrationView(APIView):
+    serializer_class = DriverRegistrationSerializer
     permission_classes = [permissions.AllowAny]
+    
     @swagger_auto_schema(
-        request_body=DriverSignupSerializer,
+        request_body=DriverRegistrationSerializer,
         responses={
             200: openapi.Response('User created  successful', examples={
                 'application/json': {
@@ -50,21 +53,20 @@ class DriverSignupView(APIView):
             401: openapi.Response('Unauthorized')
         }
     )
-
     def post(self, request):
-        serializer = DriverSignupSerializer(data=request.data)
+        serializer = DriverRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Driver registered successfully!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-      
 
-class UserLoginView(APIView):
-    serializer_class = LoginSerializer
+
+class LoginView(APIView):
+    serializer_class = UserLoginSerializer
     permission_classes = [permissions.AllowAny]
 
     @swagger_auto_schema(
-        request_body=LoginSerializer,
+        request_body=UserLoginSerializer,
         responses={
             200: openapi.Response('Login successful', examples={
                 'application/json': {
@@ -78,21 +80,16 @@ class UserLoginView(APIView):
             401: openapi.Response('Unauthorized')
         }
     )
-
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
+        serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            username = serializer.validated_data['username']
-            password = serializer.validated_data['password']
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                refresh = RefreshToken.for_user(user)
-                return Response({
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                    'is_staff': user.is_staff,
-                    'id': user.id,  # Added comma here
-                    'message': 'Login successful'
-                }, status=status.HTTP_200_OK)
-            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+            user = serializer.validated_data
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                'id': user.id,
+                "role": user.role,
+                'message': 'Login successful'
+            }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
