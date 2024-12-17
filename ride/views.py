@@ -19,6 +19,7 @@ from .serializers import RideSerializer,RideRequestSerializer, RideStatusUpdateS
 class RideCreateView(generics.CreateAPIView):
     queryset = Ride.objects.all()
     serializer_class = RideSerializer
+    permission_classes = [permissions.AllowAny]
 
     def perform_create(self, serializer):
         serializer.save(rider=self.request.user)
@@ -100,25 +101,4 @@ class ListRidesRequest(generics.ListAPIView):
     queryset = RideRequest.objects.all()
     serializer_class = RideRequestSerializer
 
-class RideRequestAcceptView(generics.UpdateAPIView):
-    queryset = RideRequest.objects.all()
-    serializer_class = RideRequestSerializer
-    permission_classes = [IsDriver]
-
-    def update(self, request, *args, **kwargs):
-        ride_request = self.get_object()
-
-    
-        if not hasattr(request.user, 'driver') or ride_request.driver != request.user.driver:
-            return Response({"detail": "Unauthorized to accept this ride request."}, status=status.HTTP_403_FORBIDDEN)
-
-        if ride_request.accepted:
-            return Response({"detail": "Ride request already accepted."}, status=status.HTTP_400_BAD_REQUEST)
-
-        ride_request.accepted = True
-        ride_request.ride.status = 'started'
-        ride_request.ride.save()
-        ride_request.save()
-
-        return Response({"detail": "Ride request accepted successfully."}, status=status.HTTP_200_OK)
 
