@@ -49,9 +49,8 @@ class RideRequestAcceptView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         ride_request = self.get_object()
 
-        # Ensure the logged-in user is a driver
         try:
-            driver = request.user.driver  # Access reverse accessor for OneToOneField
+            driver = request.user.driver
         except Driver.DoesNotExist:
             raise ValidationError("You are not authorized to accept this ride request.")
 
@@ -63,13 +62,15 @@ class RideRequestAcceptView(generics.UpdateAPIView):
             raise ValidationError("This ride request has already been accepted.")
 
         with transaction.atomic():
-            # Accept the ride request and update statuses
             ride_request.accepted = True
             ride_request.save()
 
             ride = ride_request.ride
             ride.status = 'started'
             ride.save()
+
+            driver.is_available = False
+            driver.save()
 
         return Response({
             "message": "Ride request accepted successfully.",
