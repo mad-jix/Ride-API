@@ -1,48 +1,54 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 
-class SignupSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(max_length=128, write_only=True, validators=[validate_password])
+from .models import CustomUser
 
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        user = authenticate(**data)
+        if user and user.is_active:
+            return user
+        raise serializers.ValidationError("Invalid credentials")
+
+
+class RiderRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['id','username', 'email', 'password']
+        model = CustomUser
+        fields = ['username', 'email', 'password', 'role']
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        user = User.objects.create_user(
+        # Force role to "rider" and set is_staff = False
+        validated_data['role'] = 'rider'
+        user = CustomUser.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
-            password=validated_data['password']
+            password=validated_data['password'],
+            role=validated_data['role']
         )
-
-        user.is_staff = False
-        user.save()
-
-        return user
-    
-
-class DriverSignupSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, validators=[validate_password])
-
-    class Meta:
-        model = User
-        fields = ['id','username', 'email', 'password']
-
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password']
-        )
-        
-        # Set user as staff/driver
-        user.is_staff = True
-        user.save()
-
         return user
 
 
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=50)
-    password = serializers.CharField(max_length=50)
+
+
+class DriverRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'password', 'role']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        # Force role to "driver" and set is_staff = True
+        validated_data['role'] = 'driver'
+        user = CustomUser.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            role=validated_data['role']
+        )
+        return user
