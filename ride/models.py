@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
 from driver.models import Driver
 
@@ -11,7 +12,7 @@ class Ride(models.Model):
         ('cancelled', 'Cancelled')
     ]
 
-    rider = models.ForeignKey(User, related_name='rides_as_rider', on_delete=models.CASCADE)
+    rider = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='rides_as_rider', on_delete=models.CASCADE,null=True, blank=True)
     pickup_location = models.CharField(max_length=255)
     dropoff_location = models.CharField(max_length=255)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='booked')
