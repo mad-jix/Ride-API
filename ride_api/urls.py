@@ -26,6 +26,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api/users/',include('user.urls')),
     path('api/rides/',include('ride.urls')),
+    path('api/driver/',include('driver.urls')),
     path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='docs'),
 
 ]
