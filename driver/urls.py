@@ -3,10 +3,10 @@ from .views import DriverCreateView,DriverListView,DriverUpdateView,RideRequestA
 
 urlpatterns = [
 
-    path('drivers/create/', DriverCreateView.as_view(), name='driver-create'),
+    path('create', DriverCreateView.as_view(), name='driver-create'),
     path('list/', DriverListView.as_view(), name='all-driverse'),
-    path('drivers/<int:pk>/', DriverUpdateView.as_view(), name='driver-update'),
-    path('ride/<int:pk>/accept/', RideRequestAcceptView.as_view(), name='accept-ride-request'),
+    path('change/<int:pk>/', DriverUpdateView.as_view(), name='driver-update'),
+    path('ride-accept/<int:pk>/', RideRequestAcceptView.as_view(), name='accept-ride-request'),
 
 
 ]
