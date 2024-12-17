@@ -18,10 +18,10 @@ from ride.models import RideRequest
 class DriverCreateView(generics.CreateAPIView):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
-    permission_classes = [IsDriver]  
+    permission_classes = [IsDriver]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save()
 
 
 class DriverListView(generics.ListAPIView):
