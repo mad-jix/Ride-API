@@ -23,7 +23,6 @@ class RiderRegistrationSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        # Force role to "rider" and set is_staff = False
         validated_data['role'] = 'rider'
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
@@ -43,7 +42,6 @@ class DriverRegistrationSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        # Force role to "driver" and set is_staff = True
         validated_data['role'] = 'driver'
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
