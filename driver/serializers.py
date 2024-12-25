@@ -14,3 +14,9 @@ class DriverSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Only staff users can create a driver.")
         
         return Driver.objects.create(**validated_data)
+
+
+class UpdateDriverSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Driver
+        fields = ['latitude', 'longitude', 'is_available']
