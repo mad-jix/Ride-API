@@ -6,18 +6,17 @@ class RideSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ride
         fields = ['id', 'rider', 'pickup_location', 'dropoff_location', 'status', 'latitude', 'longitude', 'created_at', 'updated_at']
+        read_only_fields = ['rider', 'status', 'created_at', 'updated_at']  
 
     def create(self, validated_data):
-    
-        ride = Ride.objects.create(
-            rider=validated_data['rider'],
-            pickup_location=validated_data['pickup_location'],
-            dropoff_location=validated_data['dropoff_location'],
-            status='booked',  
-            latitude=validated_data.get('latitude', 0.0),
-            longitude=validated_data.get('longitude', 0.0),
-        )
-        return ride
+        request = self.context.get('request')  
+        if not request or not request.user.is_authenticated:
+            raise serializers.ValidationError("A logged-in user is required to create a ride.")
+        
+        validated_data['rider'] = request.user  
+        validated_data['status'] = 'booked'  
+        
+        return super().create(validated_data)  
 
 
 
