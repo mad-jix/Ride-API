@@ -8,7 +8,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
 from .models import Driver
-from .serializers import DriverSerializer
+from .serializers import DriverSerializer,UpdateDriverSerializer
 from .permissions import IsDriver
  
 from ride.serializers import RideRequestSerializer
@@ -28,17 +28,6 @@ class DriverListView(generics.ListAPIView):
     queryset = Driver.objects.all()
     serializer_class = DriverSerializer
     permission_classes = [IsAuthenticated]  
-
-
-class DriverUpdateView(generics.UpdateAPIView):
-    queryset = Driver.objects.all()
-    serializer_class = DriverSerializer
-    permission_classes = [IsDriver] 
-
-    def get_object(self):
-        return generics.get_object_or_404(Driver, pk=self.kwargs['pk'])
-    
-
 
 
 class RideRequestAcceptView(generics.UpdateAPIView):
@@ -76,3 +65,21 @@ class RideRequestAcceptView(generics.UpdateAPIView):
             "message": "Ride request accepted successfully.",
             "ride_request": RideRequestSerializer(ride_request).data
         }, status=status.HTTP_200_OK)
+    
+
+class UpdateDriverView(generics.UpdateAPIView):
+    queryset = Driver.objects.all()
+    serializer_class = UpdateDriverSerializer
+    permission_classes = [IsDriver]
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            driver = self.get_object()
+        except Driver.DoesNotExist:
+            return Response({'error': 'Driver not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(driver, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
