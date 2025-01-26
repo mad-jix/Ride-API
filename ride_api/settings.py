@@ -87,6 +87,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'USER': 'admin',
+        'PASSWORD':'965638Mhd',
+        'HOST': 'rideapi.cvwya0iwcpvg.eu-north-1.rds.amazonaws.com',
+        'PORT':'3306',
     }
 }
 
